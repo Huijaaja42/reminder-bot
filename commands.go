@@ -127,6 +127,13 @@ func listCommand(user string, channel string) (string, error) {
 			list += fmt.Sprintf("id: `%v` at <t:%v:f> in this channel:\n> %s\n", r.Id, r.Time, r.Text)
 			continue
 		}
+
+		st, _ := s.Channel(r.Channel)
+		if st.Type == discordgo.ChannelTypeDM {
+			list += fmt.Sprintf("id: `%v` at <t:%v:f> in DM:\n> %s\n", r.Id, r.Time, r.Text)
+			continue
+		}
+
 		list += fmt.Sprintf("id: `%v` at <t:%v:f> in <#%v>:\n> %s\n", r.Id, r.Time, r.Channel, r.Text)
 	}
 
