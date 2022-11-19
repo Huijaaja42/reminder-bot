@@ -54,7 +54,7 @@ Dates will be interpreted as UTC by default.
 
 You can specify the time zone at the end of the time with the following format.
 
-> `-xxxx` or `+xxxx`
+> `-hhmm` or `+hhmm`
 
 e.g. `+0200` would be UTC + 2
 
