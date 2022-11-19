@@ -94,7 +94,7 @@ func addCommand(optionMap map[string]*discordgo.ApplicationCommandInteractionDat
 		return "", errors.New("error: database error")
 	}
 
-	return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R> id: `%v`", t.Unix(), t.Unix(), id), nil
+	return fmt.Sprintf("Will remind you at <t:%v:f> id: `%v`", t.Unix(), id), nil
 }
 
 func removeCommand(id uint64, user string) error {

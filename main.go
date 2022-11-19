@@ -160,7 +160,7 @@ func notifier() {
 		}
 
 		for _, r := range reminders {
-			s.ChannelMessageSend(r.Channel, fmt.Sprintf("<@!%s>\n%s", r.User, r.Text))
+			s.ChannelMessageSend(r.Channel, fmt.Sprintf("<@!%s>\n**Reminder:** %s", r.User, r.Text))
 			err := box.RemoveId(r.Id)
 			if err != nil {
 				log.Fatalf("Cannot remove reminder: %v", err)
