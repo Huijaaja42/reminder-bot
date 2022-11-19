@@ -60,7 +60,7 @@ var (
 						{
 							Type:        discordgo.ApplicationCommandOptionString,
 							Name:        "time",
-							Description: "Reminder time",
+							Description: "\"yyyy-mm-dd [hh:mm:ss]\" OR \"in x <s|min|h|d|w|mon|y>\"",
 							Required:    true,
 						},
 					},
