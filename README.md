@@ -52,7 +52,7 @@ Prefer
 
 You can also use the following format to specify a time in relation to the current time.
 
-> `in x [s|min|h|d|w|mon|y]`
+> `in x <s|min|h|d|w|mon|y>`
 
 > s = seconds
 >
