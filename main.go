@@ -191,9 +191,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
-	log.Println("Removing old commands...")
-
-	s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", []*discordgo.ApplicationCommand{})
 
 	log.Println("Adding commands...")
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
@@ -222,6 +219,8 @@ func main() {
 			log.Panicf("Cannot delete '%v' command: %v", v.Name, err)
 		}
 	}
+
+	//s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", []*discordgo.ApplicationCommand{}) // Remove all commands
 
 	log.Println("Gracefully shutting down.")
 }
