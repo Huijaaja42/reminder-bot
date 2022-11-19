@@ -26,7 +26,7 @@ The bot needs to have permissions to send messages as well as both `bot` and `ap
 
 3. Build the Docker image with `docker build --tag reminder-bot .`
 
-4. Run the Docker image with `docker run -d --restart always reminder-bot`
+4. Run the Docker image with `docker run -d --restart always --name reminder-bot reminder-bot`
 
 5. Grab the invite link from stdout and or get it below.
 
