@@ -97,8 +97,15 @@ var (
 			}
 
 			var err error
+			var user string
 			content := ""
-			user := i.Member.User.ID
+
+			if i.User != nil {
+				user = i.User.ID
+			} else {
+				user = i.Member.User.ID
+			}
+
 			channel := i.ChannelID
 
 			switch command {
@@ -125,7 +132,7 @@ var (
 					content = "Reminder removed"
 				}
 			case "list":
-				content, err = listCommand(user)
+				content, err = listCommand(user, channel)
 				if err != nil {
 					content = err.Error()
 				}
@@ -188,7 +195,7 @@ func main() {
 	log.Println("Adding commands...")
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
 	for i, v := range commands {
-		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, BotConfig.GuildID, v)
+		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
 		if err != nil {
 			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 		}
@@ -207,13 +214,13 @@ func main() {
 	log.Println("Removing commands...")
 
 	for _, v := range registeredCommands {
-		err := s.ApplicationCommandDelete(s.State.User.ID, BotConfig.GuildID, v.ID)
+		err := s.ApplicationCommandDelete(s.State.User.ID, "", v.ID)
 		if err != nil {
 			log.Panicf("Cannot delete '%v' command: %v", v.Name, err)
 		}
 	}
 
-	//s.ApplicationCommandBulkOverwrite(s.State.User.ID, BotConfig.GuildID, []*discordgo.ApplicationCommand{}) // Remove all commands
+	//s.ApplicationCommandBulkOverwrite(s.State.User.ID, "", []*discordgo.ApplicationCommand{}) // Remove all commands
 
 	log.Println("Gracefully shutting down.")
 }

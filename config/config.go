@@ -6,7 +6,6 @@ import (
 
 type BotConfig struct {
 	Token    string `mapstructure:"token"`
-	GuildID  string `mapstructure:"guildID"`
 	Interval int    `mapstructure:"scheduleInterval"`
 }
 

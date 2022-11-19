@@ -14,7 +14,7 @@ The bot needs to have permissions to send messages as well as both `bot` and `ap
 
 ### Config
 
-The bot will only respond on the specified guild (server).
+`token` is your Discord bot token.
 
 `scheduleInterval` will determine how often the bot checks for reminders due to be sent. By default, this is set to 60 seconds.
 
@@ -22,13 +22,17 @@ The bot will only respond on the specified guild (server).
 
 1. Create a Discord bot in the [Discord Developer Portal](https://discord.com/developers/applications)
 
-2. Make a copy of [config.json.example](config.json.example) and fill in your bot token and guild id.
+2. Make a copy of [config.json.example](config.json.example) and fill in your bot token.
 
-3. Invite the bot to your server `https://discord.com/api/oauth2/authorize?client_id={BOT ID}&permissions=2048&scope=bot%20applications.commands` (Replace `{BOT ID}` with your Bot ID)
+3. Build the Docker image with `docker build --tag reminder-bot .`
 
-4. Build the Docker image with `docker build --tag reminder-bot .`
+4. Run the Docker image with `docker run -d --restart always reminder-bot`
 
-5. Run the Docker image with `docker run -d --restart always reminder-bot`
+5. Grab the invite link from stdout and or get it below.
+
+> `https://discord.com/api/oauth2/authorize?client_id={BOT ID}&permissions=2048&scope=bot%20applications.commands`
+
+(Replace `{BOT ID}` with your Bot ID)
 
 ## Time Formats
 

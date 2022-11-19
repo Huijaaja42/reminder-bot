@@ -1,7 +1,6 @@
 {
     "bot": {
         "token": "",
-        "guildID": "",
         "scheduleInterval": 60
     }
 }

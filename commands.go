@@ -111,7 +111,7 @@ func removeCommand(id uint64, user string) error {
 	return nil
 }
 
-func listCommand(user string) (string, error) {
+func listCommand(user string, channel string) (string, error) {
 	query := box.Query(model.Reminder_.User.Equals("", false))
 	query.SetStringParams(model.Reminder_.User, user)
 
@@ -123,7 +123,11 @@ func listCommand(user string) (string, error) {
 	list := "**Your scheduled reminders:**\n"
 
 	for _, r := range reminders {
-		list += fmt.Sprintf("id: `%v` at <t:%v:f> %s\n", r.Id, r.Time, r.Text)
+		if r.Channel == channel {
+			list += fmt.Sprintf("id: `%v` at <t:%v:f> in this channel:\n> %s\n", r.Id, r.Time, r.Text)
+			continue
+		}
+		list += fmt.Sprintf("id: `%v` at <t:%v:f> in <#%v>:\n> %s\n", r.Id, r.Time, r.Channel, r.Text)
 	}
 
 	return list, nil
