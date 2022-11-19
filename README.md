@@ -4,7 +4,7 @@ A simple Discord bot for scheduling reminders.
 
 ### Demo Server
 
-You can test the bot [here](https://discord.gg/VZx3qRgYDb).
+You can test the bot [here](https://discord.gg/rAY3xmmAYe).
 
 ## Running the bot
 
