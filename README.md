@@ -48,6 +48,16 @@ Prefer
 
 (Without a time it will default to midnight.)
 
+### Time Zone
+
+Dates will be interpreted as UTC by default.
+
+You can specify the time zone at the end of the time with the following format.
+
+> `-xxxx` or `+xxxx`
+
+e.g. `+0200` would be UTC + 2
+
 ### Relative Format
 
 You can also use the following format to specify a time in relation to the current time.
