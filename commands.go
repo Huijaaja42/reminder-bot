@@ -97,8 +97,16 @@ func addCommand(optionMap map[string]*discordgo.ApplicationCommandInteractionDat
 	return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R> id: `%v`", t.Unix(), t.Unix(), id), nil
 }
 
-func removeCommand(id uint64) error {
-	err := box.RemoveId(id)
+func removeCommand(id uint64, user string) error {
+	r, err := box.Get(id)
+	if err != nil {
+		return errors.New("error: invalid id")
+	}
+	if r.User != user {
+		return errors.New("error: invalid id")
+	}
+
+	err = box.RemoveId(r.Id)
 	if err != nil {
 		return errors.New("error: invalid id")
 	}

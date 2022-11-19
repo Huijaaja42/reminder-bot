@@ -116,7 +116,7 @@ var (
 						break
 					}
 
-					err = removeCommand(uint64(id))
+					err = removeCommand(uint64(id), user)
 					if err != nil {
 						content = err.Error()
 						break
@@ -154,7 +154,7 @@ func notifier() {
 
 		for _, r := range reminders {
 			s.ChannelMessageSend(r.Channel, fmt.Sprintf("<@!%s>\n%s", r.User, r.Text))
-			err := removeCommand(r.Id)
+			err := box.RemoveId(r.Id)
 			if err != nil {
 				log.Fatalf("Cannot remove reminder: %v", err)
 			}
