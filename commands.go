@@ -99,10 +99,7 @@ func addCommand(optionMap map[string]*discordgo.ApplicationCommandInteractionDat
 
 func removeCommand(id uint64, user string) error {
 	r, err := box.Get(id)
-	if err != nil {
-		return errors.New("error: invalid id")
-	}
-	if r.User != user {
+	if err != nil || r == nil || r.User != user {
 		return errors.New("error: invalid id")
 	}
 
