@@ -68,9 +68,9 @@ You can test the bot [here](https://discord.gg/VZx3qRgYDb).
 
 ## Built With
 
+* [github.com/objectbox/objectbox-go](https://github.com/objectbox/objectbox-go)
 * [github.com/bwmarrin/discordgo](https://github.com/bwmarrin/discordgo)
 * [github.com/araddon/dateparse](https://github.com/araddon/dateparse)
-* [github.com/google/uuid](https://github.com/google/uuid)
 * [github.com/spf13/viper](https://github.com/spf13/viper)
 
 ## License

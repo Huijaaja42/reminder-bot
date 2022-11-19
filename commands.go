@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -10,48 +11,10 @@ import (
 
 	"github.com/araddon/dateparse"
 	"github.com/bwmarrin/discordgo"
-	"github.com/google/uuid"
+	"github.com/huijaaja42/reminder-bot/model"
 )
 
-func (u *user) addReminder(channel string, t int64, text string) {
-	u.Lock()
-	defer u.Unlock()
-
-	u.queue = append(u.queue, reminder{
-		id:      uuid.New(),
-		channel: channel,
-		time:    t,
-		text:    text,
-	})
-}
-
-func (u *user) listReminders() string {
-	u.Lock()
-	defer u.Unlock()
-
-	list := "**Your scheduled reminders:**\n"
-	for _, e := range u.queue {
-		list += fmt.Sprintf("`%v` at <t:%v:f> %s\n", e.id, e.time, e.text)
-	}
-
-	return list
-}
-
-func (u *user) removeReminder(id string) error {
-	u.Lock()
-	defer u.Unlock()
-
-	for i, e := range u.queue {
-		if id == e.id.String() {
-			u.queue = append(u.queue[:i], u.queue[i+1:]...)
-			return nil
-		}
-	}
-
-	return errors.New("error: invalid id")
-}
-
-func (u *user) handleAddCommand(optionMap map[string]*discordgo.ApplicationCommandInteractionDataOption, i *discordgo.InteractionCreate) (string, error) {
+func addCommand(optionMap map[string]*discordgo.ApplicationCommandInteractionDataOption, user string, channel string) (string, error) {
 	var text string
 	var timeString string
 
@@ -66,6 +29,8 @@ func (u *user) handleAddCommand(optionMap map[string]*discordgo.ApplicationComma
 	if text == "" || timeString == "" {
 		return "", errors.New("error: invalid input")
 	}
+
+	t := time.Now()
 
 	if strings.HasPrefix(timeString, "in") {
 		r := regexp.MustCompile(`in\s*(?P<value>\d+)\s*(?P<unit>s|min|h|d|w|mon|y)`)
@@ -92,46 +57,69 @@ func (u *user) handleAddCommand(optionMap map[string]*discordgo.ApplicationComma
 			return "", errors.New("error: invalid time format")
 		}
 
-		t := time.Now()
-
 		switch unit {
 		case "s":
 			t = t.Add(time.Second * time.Duration(value))
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		case "min":
 			t = t.Add(time.Minute * time.Duration(value))
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		case "h":
 			t = t.Add(time.Hour * time.Duration(value))
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		case "d":
 			t = t.AddDate(0, 0, value)
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		case "w":
 			t = t.AddDate(0, 0, value*7)
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		case "mon":
 			t = t.AddDate(0, 1, value)
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		case "y":
 			t = t.AddDate(1, 0, value)
-			u.addReminder(i.ChannelID, t.Unix(), text)
-			return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
 		default:
+			return "", errors.New("error: invalid time format")
+		}
+	} else {
+		var err error
+		t, err = dateparse.ParseStrict(timeString)
+		if err != nil {
 			return "", errors.New("error: invalid time format")
 		}
 	}
 
-	t, err := dateparse.ParseStrict(timeString)
+	id, err := box.Put(&model.Reminder{
+		User:    user,
+		Channel: channel,
+		Time:    t.Unix(),
+		Text:    text,
+	})
 	if err != nil {
-		return "", errors.New("error: invalid time format")
+		log.Printf("Database error: %v", err)
+		return "", errors.New("error: database error")
 	}
-	u.addReminder(i.ChannelID, t.Unix(), text)
-	return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R>", t.Unix(), t.Unix()), nil
+
+	return fmt.Sprintf("Will remind you at <t:%v:f> <t:%v:R> id: `%v`", t.Unix(), t.Unix(), id), nil
+}
+
+func removeCommand(id uint64) error {
+	err := box.RemoveId(id)
+	if err != nil {
+		return errors.New("error: invalid id")
+	}
+
+	return nil
+}
+
+func listCommand(user string) (string, error) {
+	query := box.Query(model.Reminder_.User.Equals("", false))
+	query.SetStringParams(model.Reminder_.User, user)
+
+	reminders, err := query.Find()
+	if err != nil {
+		return "", errors.New("error: database error")
+	}
+
+	list := "**Your scheduled reminders:**\n"
+
+	for _, r := range reminders {
+		list += fmt.Sprintf("id: `%v` at <t:%v:f> %s\n", r.Id, r.Time, r.Text)
+	}
+
+	return list, nil
 }

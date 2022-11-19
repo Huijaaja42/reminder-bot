@@ -5,45 +5,26 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
+	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/google/uuid"
 	"github.com/huijaaja42/reminder-bot/config"
+	"github.com/huijaaja42/reminder-bot/model"
+	"github.com/objectbox/objectbox-go/objectbox"
 )
-
-type reminder struct {
-	id      uuid.UUID
-	channel string
-	time    int64
-	text    string
-}
-
-type user struct {
-	sync.Mutex
-	id    string
-	queue []reminder
-}
-
-var users struct {
-	sync.RWMutex
-	userMap map[string]*user
-}
-
-func init() {
-	users.userMap = make(map[string]*user)
-}
-
-func newUser(id string) *user {
-	return &user{
-		id:    id,
-		queue: []reminder{},
-	}
-}
 
 var s *discordgo.Session
 var BotConfig *config.BotConfig
+var box *model.ReminderBox
+
+func initObjectBox() *objectbox.ObjectBox {
+	objectBox, err := objectbox.NewBuilder().Model(model.ObjectBoxModel()).Build()
+	if err != nil {
+		log.Fatalf("Cannot open database: %v", err)
+	}
+	return objectBox
+}
 
 func init() {
 	config, err := config.LoadConfig()
@@ -115,35 +96,39 @@ var (
 				optionMap[opt.Name] = opt
 			}
 
+			var err error
 			content := ""
-
-			if _, ok := users.userMap[i.Member.User.ID]; !ok {
-				users.Lock()
-				users.userMap[i.Member.User.ID] = newUser(i.Member.User.ID)
-				users.Unlock()
-			}
-
-			u := users.userMap[i.Member.User.ID]
+			user := i.Member.User.ID
+			channel := i.ChannelID
 
 			switch command {
 			case "add":
-				var err error
-				content, err = u.handleAddCommand(optionMap, i)
+				content, err = addCommand(optionMap, user, channel)
 				if err != nil {
 					content = err.Error()
 				}
 			case "remove":
 				content = "error: invalid id"
 				if opt, ok := optionMap["id"]; ok {
-					err := u.removeReminder(opt.StringValue())
+					idString := opt.StringValue()
+					id, err := strconv.Atoi(idString)
+					if err != nil {
+						break
+					}
+
+					err = removeCommand(uint64(id))
 					if err != nil {
 						content = err.Error()
 						break
 					}
+
 					content = "Reminder removed"
 				}
 			case "list":
-				content = u.listReminders()
+				content, err = listCommand(user)
+				if err != nil {
+					content = err.Error()
+				}
 			}
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -159,28 +144,31 @@ var (
 
 func notifier() {
 	for {
-		users.RLock()
-		for _, u := range users.userMap {
-			u.Lock()
-			for _, r := range u.queue {
-				if r.time <= time.Now().Unix() {
-					s.ChannelMessageSend(r.channel, fmt.Sprintf("<@!%s>\n%s", u.id, r.text))
-					u.Unlock()
-					err := u.removeReminder(r.id.String())
-					u.Lock()
-					if err != nil {
-						log.Fatalf("Cannot remove reminder: %v", err)
-					}
-				}
-			}
-			u.Unlock()
+		query := box.Query(model.Reminder_.Time.LessThan(0))
+		query.SetInt64Params(model.Reminder_.Time, time.Now().Unix())
+
+		reminders, err := query.Find()
+		if err != nil {
+			log.Fatalf("Database error: %v", err)
 		}
-		users.RUnlock()
+
+		for _, r := range reminders {
+			s.ChannelMessageSend(r.Channel, fmt.Sprintf("<@!%s>\n%s", r.User, r.Text))
+			err := removeCommand(r.Id)
+			if err != nil {
+				log.Fatalf("Cannot remove reminder: %v", err)
+			}
+		}
+
 		time.Sleep(time.Duration(BotConfig.Interval) * time.Second)
 	}
 }
 
 func main() {
+	ob := initObjectBox()
+	defer ob.Close()
+	box = model.BoxForReminder(ob)
+
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			h(s, i)

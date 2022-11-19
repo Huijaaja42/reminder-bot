@@ -5,7 +5,8 @@ go 1.19
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/bwmarrin/discordgo v0.26.1
-	github.com/google/uuid v1.3.0
+	github.com/google/flatbuffers v22.10.26+incompatible
+	github.com/objectbox/objectbox-go v1.6.1
 	github.com/spf13/viper v1.14.0
 )
 
@@ -15,6 +16,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/objectbox/objectbox-generator v0.13.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
