@@ -30,7 +30,7 @@ The bot needs to have permissions to send messages as well as both `bot` and `ap
 
 5. Run the Docker image with `docker run -d -v reminder-data:/usr/src/reminder-bot/objectbox --restart always --name reminder-bot reminder-bot`
 
-6. Grab the invite link from stdout and or get it below.
+6. Grab the invite link from stdout or get it below.
 
 > `https://discord.com/api/oauth2/authorize?client_id={BOT ID}&permissions=2048&scope=bot%20applications.commands`
 
